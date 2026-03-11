@@ -1,6 +1,7 @@
 const Protocols = {
     Freedom: "freedom",
     Blackhole: "blackhole",
+    Drop: "drop",
     DNS: "dns",
     VMess: "vmess",
     VLESS: "vless",
@@ -1094,6 +1095,7 @@ Outbound.Settings = class extends CommonClass {
         switch (protocol) {
             case Protocols.Freedom: return new Outbound.FreedomSettings();
             case Protocols.Blackhole: return new Outbound.BlackholeSettings();
+            case Protocols.Drop: return new Outbound.DropSettings();
             case Protocols.DNS: return new Outbound.DNSSettings();
             case Protocols.VMess: return new Outbound.VmessSettings();
             case Protocols.VLESS: return new Outbound.VLESSSettings();
@@ -1111,6 +1113,7 @@ Outbound.Settings = class extends CommonClass {
         switch (protocol) {
             case Protocols.Freedom: return Outbound.FreedomSettings.fromJson(json);
             case Protocols.Blackhole: return Outbound.BlackholeSettings.fromJson(json);
+            case Protocols.Drop: return Outbound.DropSettings.fromJson(json);
             case Protocols.DNS: return Outbound.DNSSettings.fromJson(json);
             case Protocols.VMess: return Outbound.VmessSettings.fromJson(json);
             case Protocols.VLESS: return Outbound.VLESSSettings.fromJson(json);
@@ -1244,6 +1247,32 @@ Outbound.BlackholeSettings = class extends CommonClass {
         };
     }
 };
+
+Outbound.DropSettings = class extends CommonClass {
+    constructor(
+        lossPercent = 30,
+        direction = 'upload'
+    ) {
+        super();
+        this.lossPercent = lossPercent;
+        this.direction = direction;
+    }
+
+    static fromJson(json = {}) {
+        return new Outbound.DropSettings(
+            json.lossPercent !== undefined ? json.lossPercent : 30,
+            json.direction !== undefined ? json.direction : 'upload',
+        );
+    }
+
+    toJson() {
+        return {
+            lossPercent: this.lossPercent,
+            direction: this.direction,
+        };
+    }
+};
+
 Outbound.DNSSettings = class extends CommonClass {
     constructor(
         network = 'udp',

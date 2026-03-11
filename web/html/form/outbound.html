@@ -118,6 +118,23 @@
         </a-form-item>
       </template>
 
+      <!-- drop settings -->
+      <template v-if="outbound.protocol === Protocols.Drop">
+        <a-form-item label='Loss Percent (%)'>
+          <a-input-number v-model.number="outbound.settings.lossPercent"
+            :min="0" :max="100" :style="{ width: '100%' }"
+            placeholder="0~100"></a-input-number>
+        </a-form-item>
+        <a-form-item label='Direction'>
+          <a-select v-model="outbound.settings.direction"
+            :dropdown-class-name="themeSwitcher.currentTheme">
+            <a-select-option value="upload">Upload (上行)</a-select-option>
+            <a-select-option value="download">Download (下行)</a-select-option>
+            <a-select-option value="all">All (双向)</a-select-option>
+          </a-select>
+        </a-form-item>
+      </template>
+
       <!-- dns settings -->
       <template v-if="outbound.protocol === Protocols.DNS">
         <a-form-item label='{{ i18n "pages.inbounds.network" }}'>
