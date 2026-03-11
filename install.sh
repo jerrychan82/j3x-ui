@@ -765,16 +765,26 @@ install_x-ui() {
     
     # Download resources
     if [ $# == 0 ]; then
-        tag_version=$(curl -Ls "https://api.github.com/repos/jerrychan82/j3x-ui/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+        # Try to get latest version from GitHub API
+        tag_version=$(curl -Ls "https://api.github.com/repos/jerrychan82/j3x-ui/releases/latest" 2>/dev/null | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         if [[ ! -n "$tag_version" ]]; then
             echo -e "${yellow}Trying to fetch version with IPv4...${plain}"
-            tag_version=$(curl -4 -Ls "https://api.github.com/repos/jerrychan82/j3x-ui/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-            if [[ ! -n "$tag_version" ]]; then
-                echo -e "${red}Failed to fetch x-ui version, it may be due to GitHub API restrictions, please try it later${plain}"
-                exit 1
-            fi
+            tag_version=$(curl -4 -Ls "https://api.github.com/repos/jerrychan82/j3x-ui/releases/latest" 2>/dev/null | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         fi
-        echo -e "Got x-ui latest version: ${tag_version}, beginning the installation..."
+        
+        # If API fails, try parsing from releases page HTML
+        if [[ ! -n "$tag_version" ]]; then
+            echo -e "${yellow}Trying to parse version from releases page...${plain}"
+            tag_version=$(curl -4 -Ls "https://github.com/jerrychan82/j3x-ui/releases" 2>/dev/null | grep -oE 'href="/jerrychan82/j3x-ui/releases/tag/v[0-9]+\.[0-9]+\.[0-9]+"' | head -1 | sed -E 's/.*tag\/(v[0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+        fi
+        
+        # If still fails, use default version
+        if [[ ! -n "$tag_version" ]]; then
+            echo -e "${yellow}GitHub API unavailable, using default version v1.0.0...${plain}"
+            tag_version="v1.0.0"
+        fi
+        
+        echo -e "Got x-ui version: ${tag_version}, beginning the installation..."
         curl -4fLRo ${xui_folder}-linux-$(arch).tar.gz https://github.com/jerrychan82/j3x-ui/releases/download/${tag_version}/x-ui-linux-$(arch).tar.gz
         if [[ $? -ne 0 ]]; then
             echo -e "${red}Downloading x-ui failed, please be sure that your server can access GitHub ${plain}"
